@@ -363,6 +363,47 @@ class SR844(Lockin):
         """Returns the output source for channel 2."""
         return self._get_enum('DDEF?2', Ch2OutputSource, QM=False)
 
+    def _check_offset_enum(self, output):
+        if output == OutputType.theta:
+            raise ValueError('Cannot get offset of theta')
+        if output not in [OutputType.X, OutputType.Y, 
+                OutputType.R, OutputType.RdBm]:
+            raise ValueError('Output Type must be X, Y, R, or RdBm')
+
+    _OFFSET_CHANNEL_MAPPING = {
+        OutputType.X: '1, 0',
+        OutputType.R: '1, 1',
+        OutputType.RdBm: '1, 2',
+        OutputType.Y: '2, 0'
+    }
+
+    @check_enums(output=OutputType)
+    def get_offset(self, output):
+        """Returns the offset of a given quantity (X, Y, R, RdBm)."""
+        self._check_offset_enum(output)
+        return float(self._rsrc.query('DOFF? %s' % self._OFFSET_CHANNEL_MAPPING[output])) / 100
+
+    @check_enums(output=OutputType)
+    def set_offset(self, output, value):
+        """Sets the offset of a given quantity (X, Y, R, RdBm)."""
+        self._check_offset_enum(output)
+        self._rsrc.write(
+            'DOFF %s, %.2f' % (self._OFFSET_CHANNEL_MAPPING[output], value * 100)
+            )
+
+    x_offset = property(
+        lambda self: self.get_offset('X'), 
+        lambda self, val: self.set_offset('X', val))
+    y_offset = property(
+        lambda self: self.get_offset('Y'), 
+        lambda self, val: self.set_offset('Y', val))
+    r_offset = property(
+        lambda self: self.get_offset('R'), 
+        lambda self, val: self.set_offset('R', val))
+    r_dBm_offset = property(
+        lambda self: self.get_offset('RdBm'), 
+        lambda self, val: self.set_offset('RdBm', val))
+    
     # TODO:
     # GET OFFSET and EXPAND
     #
@@ -485,6 +526,10 @@ class SR844(Lockin):
         else:
             units = 'degrees'
         return self._get(command_string, units, QM=False)
+
+    x = property(lambda self: self.read_output('X'))
+    y = property(lambda self: self.read_output('Y'))
+    r = property(lambda self: self.read_output('R'))
 
     def read_trace_value(self, channel, units=None):
         """ Returns the current value of indicated tchannel
