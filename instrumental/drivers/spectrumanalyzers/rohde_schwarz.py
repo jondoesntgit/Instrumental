@@ -8,6 +8,7 @@ from .. import VisaMixin, SCPI_Facet
 import numpy as np
 
 _INST_PARAMS = ['visa_address']
+_INST_VISA_INFO = {'FSEA20': ('Rohde&Schwarz', ['FSEA 20'])}
 
 class FSEA20(SpectrumAnalyzer, VisaMixin):
 

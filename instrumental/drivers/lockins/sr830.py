@@ -1,7 +1,7 @@
 """
-Driver for SRS model SR44 lock-in amplifier.
+Driver for SRS model SR830 lock-in amplifier.
 
-Note that the sr844 will not usually work with `list_instruments()`, because it uses a non-standard
+Note that the sr830 will not usually work with `list_instruments()`, because it uses a non-standard
 termination character, and because one must first send the 'OUTX' command to specify which type of
 output to use.
 """
@@ -15,7 +15,7 @@ from . import Lockin
 from .. import Facet
 
 _INST_PARAMS = ['visa_address']
-_INST_VISA_INFO = {'SR844': ('Stanford_Research_Systems', ['SR844'])}
+_INST_VISA_INFO = {'SR830': ('Stanford_Research_Systems', ['SR830'])}
 
 
 BYTES_PER_POINT = 4
@@ -32,21 +32,33 @@ class ReferenceSource(Enum):
     external = 1
 
 class Sensitivity(Enum):
-    x100nV = 0
-    x300nV = 1
-    x1uV = 2
-    x3uV = 3
-    x10uV = 4
-    x30uV = 5
-    x100uV = 6
-    x300uV = 7
-    x1mV = 8
-    x3mV = 9
-    x10mV = 10
-    x30mV = 11
-    x100mV = 12
-    x300mV = 13
-    x1V = 14
+    x2nV = 0
+    x5nV = 1
+    x10nV = 2
+    x20nV = 3
+    x50nV = 4
+    x100nV = 5
+    x200nV = 6
+    x500nV = 7
+    x1uV = 8
+    x2uV = 9
+    x5uV = 10
+    x10uV = 11
+    x20uV = 12
+    x50uV = 13
+    x100uV = 14
+    x200uV = 15
+    x500uV = 16
+    x1mV = 17
+    x2mV = 18
+    x5mV = 19
+    x10mV = 20
+    x20mV = 21
+    x50mV = 22
+    x100mV = 23
+    x200mV = 24
+    x500mV = 25
+    x1V = 26
 
 class ReserveMode(Enum):
     off = 0
@@ -63,24 +75,26 @@ class CloseReserveMode(Enum):
     low_noise = 2
 
 class TimeConstant(Enum):
-    x100us = 0
-    x300us = 1
-    x1ms = 2
-    x3ms = 3
-    x10ms = 4
-    x30ms = 5
-    x100ms = 6
-    x300ms = 7
-    x1s = 8
-    x3s = 9
-    x10s = 10
-    x30s = 11
-    x100s = 12
-    x300s = 13
-    x1ks = 14
-    x3ks = 15
-    x10ks = 16
-    x30ks = 17
+    x10us = 0
+    x30us = 1
+    x100us = 2
+    x300us = 3
+    x1ms = 4
+    x3ms = 5
+    x10ms = 6
+    x30ms = 7
+    x100ms = 8
+    x300ms = 9
+    x1s = 10
+    x3s = 11
+    x10s = 12
+    x30s = 13
+    x100s = 14
+    x300s = 15
+    x1ks = 16
+    x3ks = 17
+    x10ks = 18
+    x30ks = 19
 
 class LowPassSlope(Enum):
     six_dB_per_octave = 1
@@ -91,16 +105,16 @@ class LowPassSlope(Enum):
 class Ch1OutputSource(Enum):
     X = 0
     R = 1
-    RdBm = 2
-    Xn = 3
-    AuxIn = 4
+    Xn = 2
+    AuxIn1 = 3
+    AuxIn2 = 4
 
 class Ch2OutputSource(Enum):
     Y = 0
     theta = 1
     Yn = 2
-    YndBm = 3
-    AuxIn = 4
+    AuxIn3 = 3
+    AuxIn4 = 4
 
 class ExpandSelector(Enum):
     x1 = 0
@@ -140,8 +154,6 @@ class Parameter(Enum):
     reference_frequency = 9
     trace_1 = 10
     trace_2 = 11
-    trace_3 = 12
-    trace_4 = 13
 
     def units(parameter):
         if parameter.value in [1,2,3,5,6,7,8]:
@@ -163,7 +175,7 @@ class StatusByte(Enum):
     service_request = 6
 
 
-class SR844(Lockin):
+class SR830(Lockin):
     """ Interfaces with the SRS model SR844 Lock-in Amplifier"""
     AlarmMode = AlarmMode
     ReferenceSource = ReferenceSource
@@ -193,8 +205,8 @@ class SR844(Lockin):
         self._rsrc.read_termination = '\n'
         self.ID = self._rsrc.query('*IDN?')
         vendor, model, SN, version = self.ID.split(',')
-        if model != 'SR844':
-            raise InstrumentTypeError('Instrument not SR844')
+        if model != 'SR830':
+            raise InstrumentTypeError('Instrument not SR830')
 
     def set_output_interface(self, rs232_interface=True):
         """ Sets the output interface.
@@ -276,7 +288,7 @@ class SR844(Lockin):
     @check_units(sensitivity='V')
     def sensitivity(self, sensitivity):
         string = '{:~.0f}'.format(sensitivity.to_compact())
-        string = 'x' + string.replace(' ', '')
+        string = 'x' + string.replace(' ', '').replace('µ', 'u')
         self.set_sensitivity(Sensitivity[string])
 
     @check_enums(reserve_mode=ReserveMode)

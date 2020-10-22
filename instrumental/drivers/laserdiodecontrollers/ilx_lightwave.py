@@ -16,3 +16,7 @@ class LDC3724B(LaserDiodeController, VisaMixin):
 
     current = SCPI_Facet('LAS:LDI', units='mA', convert=float)
     temperature = SCPI_Facet('TEC:T', units='degC', convert=float)
+
+    @property
+    def is_tec_at_current_limit(self):
+        return bool(int(self._rsrc.query('TEC:EVENT?')) % 2)
