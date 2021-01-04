@@ -168,11 +168,11 @@ class AQ6713B(SpectrumAnalyzer, VisaMixin):
         if trace not in 'ABC':
             raise ValueError("Trace must be either 'A', 'B' or 'C'")
         power_string = self._rsrc.query('LDAT%s' % trace)
-        power = np.array(power_string[:-2].split(','))
+        power = np.array(power_string.split(','))
         power = power.astype(np.float)[2:]
 
         wavelength_string = self._rsrc.query('WDAT%s' % trace)
-        wavelength = np.array(wavelength_string[:-2].split(','))
+        wavelength = np.array(wavelength_string.split(','))
         wavelength = wavelength.astype(np.float)[2:]
         
         if self.x_unit == XUnit['frequency']:
